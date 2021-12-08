@@ -28,7 +28,7 @@ function login({ commit }, { email, password, $route }) {
   commit("setStatus", "LOGGING_IN");
 
   axios
-    .get("api")
+    .post("api", email, password)
     .then(
       ({
         data: {
@@ -37,7 +37,6 @@ function login({ commit }, { email, password, $route }) {
       }) => {
         commit("setStatus", code);
         if (code === "WRONG_CREDENTIALS") {
-          log.debug("Wrong credentials");
           commit("setLoading", false);
         } else if (code === "LOGIN_SUCCESS") {
           // Simple login completed successfully
@@ -45,7 +44,8 @@ function login({ commit }, { email, password, $route }) {
           // type: 'LOGIN' for regular sessions
           commit("setUser", Object.assign(user, { iat, exp, type: "LOGIN" }));
           commit("setLoading", false);
-          router.push($route.query.redirect || "/");
+          console.log($route);
+          // router.push($route.query.redirect || "/");
         }
       }
     )
@@ -80,22 +80,16 @@ function checkExpiration({ dispatch, state }) {
   return new Promise((resolve) => {
     let user;
     if (state.user.id) {
-      log.debug("Got user from state");
       user = state.user;
     } else if (LocalStorageHelper.userExists()) {
-      log.warn("Inconsistent auth state: user in local storage, not in state");
-      log.debug("Restoring user from localStorage");
       user = LocalStorageHelper.getUser();
     } else {
-      log.debug("No user in state or localStorage");
       // No user in state
       // continue to next route handler
       return resolve();
     }
     const remaining = user.exp - Date.now();
-    log.debug(`Auth session expires in ${Math.round(remaining / 1000)}s`);
     if (remaining < AUTH_EXP_CHECK_INTERVAL) {
-      log.debug("Auth session has expired. Triggering inactivity logout");
       dispatch("logOutInactivity");
       return resolve();
     }
@@ -114,7 +108,7 @@ function logout({ commit }) {
    * in order to improve page responsiveness
    * TODO: Review this practice
    */
-  router.push("/login");
+  // router.push("/login");
   commit("clearUser");
   commit("setStatus", "LOGGED_OUT");
   commit("setLoading", false);
@@ -125,7 +119,7 @@ function logout({ commit }) {
     })
     .catch((err) => {
       localStorage.clear();
-      log.error(err);
+      console.log(err);
     });
 }
 
@@ -134,7 +128,6 @@ function logout({ commit }) {
  * and a token received by email.
  */
 function resetPassword({ commit }, { password, resetToken }) {
-  log.debug("Attempting to set a new password");
   axios
     .post("api", { password, resetToken })
     .then(
@@ -143,40 +136,36 @@ function resetPassword({ commit }, { password, resetToken }) {
           resetPassword: { success, user, iat, exp },
         },
       }) => {
-        log.debug("Password changed successfully. A login cookie has been set");
         if (success === true) {
           commit("setUser", Object.assign(user, { iat, exp, type: "LOGIN" }));
-          router.push("/");
+          // router.push("/");
           return;
         }
-        log.debug("Could not reset password");
         commit("clearUser");
         commit("setStatus", "PASSWORD_RESET_FAIL");
       }
     )
     .catch((err) => {
-      log.error("Could not set new password:", err);
+      console.log(err);
       commit("clearUser");
       commit("setStatus", "PASSWORD_RESET_FAIL");
     });
 }
 
 function requestPasswordReset({ commit }, { email }) {
-  log.debug("Attempting to request a password reset");
   axios
     .post("api", email)
     .then(({ data: { requestPasswordReset } }) => {
       if (requestPasswordReset) {
-        log.debug("Password reset request successful");
+        console.log("Password reset request successful");
         commit("setStatus", "PASSWORD_RESET_SUCCESS");
         return;
       }
-      log.debug("Password reset request failed");
       commit("setStatus", "PASSWORD_RESET_FAIL");
     })
     .catch((err) => {
       commit("setStatus", "PASSWORD_RESET_FAIL");
-      log.error(err);
+      console.log(err);
     });
 }
 
