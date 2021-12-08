@@ -6,6 +6,8 @@ Vue.use(VueRouter);
 
 const Test = () =>
   import(/* webpackChunkName: "TestVueX" */ "../views/Test.vue");
+const Register = () =>
+  import(/* webpackChunkName: "TestVueX" */ "../views/Register.vue");
 
 const routes = [
   {
@@ -26,6 +28,11 @@ const routes = [
     path: "/test",
     name: "Test",
     component: Test,
+  },
+  {
+    path: "/register",
+    name: "Register",
+    component: Register,
   },
 ];
 
