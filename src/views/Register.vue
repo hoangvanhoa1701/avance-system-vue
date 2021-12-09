@@ -13,6 +13,9 @@
           <el-form-item label="Email" prop="email">
             <el-input v-model="ruleForm.email"></el-input>
           </el-form-item>
+          <el-form-item label="Your name" prop="fullname">
+            <el-input v-model="ruleForm.fullname"></el-input>
+          </el-form-item>
           <el-form-item label="Password" prop="password">
             <el-input
               type="password"
@@ -46,13 +49,20 @@ export default {
   name: "Register",
   components: {},
   data: function () {
-    // let checkEmail = (rule, value, callback) => {
-    //   if (!value) {
-    //     return callback(new Error("Please input the email"));
-    //   } else {
-    //     callback();
-    //   }
-    // };
+    let checkEmail = (rule, value, callback) => {
+      if (!value) {
+        return callback(new Error("Please input the email"));
+      } else {
+        callback();
+      }
+    };
+    let checkName = (rule, value, callback) => {
+      if (!value) {
+        return callback(new Error("Please input the name"));
+      } else {
+        callback();
+      }
+    };
     let validatePass = (rule, value, callback) => {
       if (value === "") {
         callback(new Error("Please input the password"));
@@ -75,11 +85,13 @@ export default {
     return {
       ruleForm: {
         email: "",
+        fullname: "",
         password: "",
         password_confirmation: "",
       },
       rules: {
-        email: [{ trigger: "blur" }],
+        email: [{ validator: checkEmail, trigger: "blur" }],
+        fullname: [{ validator: checkName, trigger: "blur" }],
         password: [{ validator: validatePass, trigger: "blur" }],
         password_confirmation: [{ validator: validatePass2, trigger: "blur" }],
       },
@@ -90,7 +102,6 @@ export default {
     submitForm(formName) {
       this.$refs[formName].validate((valid) => {
         if (valid) {
-          alert("submit!");
           this.signup();
         } else {
           console.log("error submit!!");
@@ -102,18 +113,29 @@ export default {
       this.$refs[formName].resetFields();
     },
     signup() {
-      const { email, password, password_confirmation } = this.ruleForm;
+      const { email, fullname, password, password_confirmation } =
+        this.ruleForm;
       axios
         .post("http://127.0.0.1:3000/api/v1/auth/register", {
           email,
+          fullname,
           password,
           password_confirmation,
         })
-        .then(({ data }) => {
-          console.log(data);
+        .then((resp) => {
+          console.log(resp);
+          // this.$router.push("/");
+          this.$message({
+            message: "Sign up successfully!",
+            type: "success",
+          });
         })
         .catch((err) => {
           console.log(err);
+          this.$message({
+            message: "Sign up failed!",
+            type: "error",
+          });
         });
     },
   },
