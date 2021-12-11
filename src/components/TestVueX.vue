@@ -8,7 +8,7 @@
 </template>
 
 <script>
-import { mapGetters, mapMutations, mapActions } from "vuex";
+import { mapState, mapGetters, mapMutations, mapActions } from "vuex";
 
 export default {
   name: "TestVueX",
@@ -23,6 +23,9 @@ export default {
     };
   },
   computed: {
+    ...mapState({
+      alert: (state) => state.alert,
+    }),
     ...mapGetters(["user"]),
   },
   methods: {
@@ -31,7 +34,3 @@ export default {
   },
 };
 </script>
-
-<!-- Add "scoped" attribute to limit CSS to this component only -->
-<style scoped lang="scss">
-</style>
