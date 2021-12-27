@@ -31,7 +31,7 @@
             <div class="remember__item">
               <el-checkbox v-model="ruleForm.remember">Remember me</el-checkbox>
 
-              <a class="forgot-password">Forgot Password</a>
+              <router-link to="/">Forgot password</router-link>
             </div>
           </el-form-item>
 
@@ -48,7 +48,7 @@
 
           <div class="login-box__register">
             Don’t have an account yet?
-            <a>Register</a>
+            <router-link to="/register">Register</router-link>
           </div>
         </el-form>
       </el-card>
@@ -113,7 +113,6 @@ body {
   margin: 0;
   padding: 0;
   background: #102a43;
-  background-image: url("https://uploads.codesandbox.io/uploads/user/c3fb8e8a-35ea-4232-b5d6-0f3c5373510b/LVs7-dots.png");
   background-size: contain;
 }
 $teal: rgb(0, 124, 137);
@@ -132,6 +131,10 @@ $teal: rgb(0, 124, 137);
     display: flex;
     justify-content: center;
     align-items: center;
+
+    h2 {
+      margin-bottom: 32px;
+    }
 
     .login-button {
       width: 100%;
@@ -161,7 +164,7 @@ $teal: rgb(0, 124, 137);
     }
 
     .el-card {
-      padding-top: 0;
+      padding-top: 30px;
       padding-bottom: 30px;
     }
 
@@ -193,6 +196,7 @@ $teal: rgb(0, 124, 137);
 .el-button--primary {
   background: $teal;
   border-color: $teal;
+  color: #fff;
 
   &:hover,
   &.active,

@@ -1,44 +1,65 @@
 <template>
-  <div class="register">
-    <el-container>
-      <el-main>
+  <div id="register">
+    <div class="register-box">
+      <el-card>
+        <h2>Register</h2>
         <el-form
+          class="register-form"
           :model="ruleForm"
           status-icon
           :rules="rules"
           ref="ruleForm"
-          label-width="120px"
-          class="demo-ruleForm"
         >
-          <el-form-item label="Email" prop="email">
-            <el-input v-model="ruleForm.email"></el-input>
-          </el-form-item>
-          <el-form-item label="Your name" prop="fullname">
-            <el-input v-model="ruleForm.fullname"></el-input>
-          </el-form-item>
-          <el-form-item label="Password" prop="password">
+          <el-form-item prop="email">
             <el-input
-              type="password"
+              v-model="ruleForm.email"
+              placeholder="Email"
+              prefix-icon="el-icon-user"
+            ></el-input>
+          </el-form-item>
+
+          <el-form-item prop="fullname">
+            <el-input
+              v-model="ruleForm.fullname"
+              placeholder="Your name"
+            ></el-input>
+          </el-form-item>
+
+          <el-form-item prop="password">
+            <el-input
               v-model="ruleForm.password"
-              autocomplete="off"
-            ></el-input>
-          </el-form-item>
-          <el-form-item label="Confirm" prop="password_confirmation">
-            <el-input
+              placeholder="Password"
               type="password"
-              v-model="ruleForm.password_confirmation"
-              autocomplete="off"
+              prefix-icon="el-icon-lock"
             ></el-input>
           </el-form-item>
-          <el-form-item>
-            <el-button type="primary" @click="submitForm('ruleForm')"
-              >Submit</el-button
-            >
-            <el-button @click="resetForm('ruleForm')">Reset</el-button>
+
+          <el-form-item prop="password_confirmation">
+            <el-input
+              v-model="ruleForm.password_confirmation"
+              placeholder="Password confirm"
+              type="password"
+              prefix-icon="el-icon-lock"
+            ></el-input>
           </el-form-item>
+
+          <el-form-item>
+            <el-button
+              class="register-button"
+              type="primary"
+              block
+              @click="handleSubmitForm('ruleForm')"
+              >Register</el-button
+            >
+          </el-form-item>
+
+          <div class="register-box__register">
+            I have an account
+            <router-link to="/login">Login</router-link>
+          </div>
         </el-form>
-      </el-main>
-    </el-container>
+      </el-card>
+    </div>
   </div>
 </template>
 
@@ -99,7 +120,7 @@ export default {
   },
   computed: {},
   methods: {
-    submitForm(formName) {
+    handleSubmitForm(formName) {
       this.$refs[formName].validate((valid) => {
         if (valid) {
           this.signup();
@@ -141,3 +162,102 @@ export default {
   },
 };
 </script>
+
+<style scoped lang="scss">
+body {
+  margin: 0;
+  padding: 0;
+  background: #102a43;
+  background-size: contain;
+}
+$teal: rgb(0, 124, 137);
+#register {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-align: center;
+  color: #2c3e50;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+
+  .register-box {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    h2 {
+      margin-bottom: 32px;
+    }
+
+    .register-button {
+      width: 100%;
+    }
+    .register-form {
+      width: 290px;
+    }
+
+    .el-input__inner:hover {
+      border-color: $teal;
+    }
+
+    .el-input__prefix {
+      background: rgb(238, 237, 234);
+      left: 0;
+      height: calc(100% - 2px);
+      left: 1px;
+      top: 1px;
+      border-radius: 3px;
+      .el-input__icon {
+        width: 30px;
+      }
+    }
+
+    .el-input input {
+      padding-left: 35px;
+    }
+
+    .el-card {
+      padding-top: 30px;
+      padding-bottom: 30px;
+    }
+
+    a {
+      color: $teal;
+      text-decoration: none;
+      &:hover,
+      &:active,
+      &:focus {
+        color: lighten($teal, 7);
+      }
+    }
+    .el-card {
+      width: 340px;
+      display: flex;
+      justify-content: center;
+    }
+
+    .remember__item {
+      display: flex;
+      justify-content: space-between;
+    }
+    &__register {
+      font-size: 14px;
+    }
+  }
+}
+
+.el-button--primary {
+  background: $teal;
+  border-color: $teal;
+  color: #fff;
+
+  &:hover,
+  &.active,
+  &:focus {
+    background: lighten($teal, 7);
+    border-color: lighten($teal, 7);
+  }
+}
+</style>

@@ -1,18 +1,26 @@
 <template>
-  <div class="home">
-    <img alt="Vue logo" src="../assets/logo.png" />
-    <HelloWorld msg="Welcome to Your Vue.js App" />
+  <div class="home nv-container">
+    <h1 v-if="user">Welcome home page, {{ user.fullname }}!</h1>
   </div>
 </template>
 
 <script>
-// @ is an alias to /src
-import HelloWorld from "@/components/HelloWorld.vue";
+import { mapGetters } from "vuex";
 
 export default {
   name: "Home",
-  components: {
-    HelloWorld,
+  components: {},
+  computed: {
+    ...mapGetters({ user: "auth/user" }),
   },
 };
 </script>
+
+<style lang="scss" scope>
+.home {
+  padding: 16px 0;
+  h1 {
+    text-align: center;
+  }
+}
+</style>

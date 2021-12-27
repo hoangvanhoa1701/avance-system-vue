@@ -1,4 +1,1 @@
-import localStorage from "./localStorage";
-export default {
-  localStorage,
-};
+export * from "./localStorage";

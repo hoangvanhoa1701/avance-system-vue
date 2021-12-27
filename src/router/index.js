@@ -5,17 +5,26 @@ import Home from "../views/Home.vue";
 Vue.use(VueRouter);
 
 const Test = () =>
-  import(/* webpackChunkName: "TestVueX" */ "../views/Test.vue");
+  import(/* webpackChunkName: "Test" */ "../views/Test.vue");
 const Register = () =>
-  import(/* webpackChunkName: "TestVueX" */ "../views/Register.vue");
+  import(/* webpackChunkName: "Register" */ "../views/Register.vue");
 const Login = () =>
-  import(/* webpackChunkName: "TestVueX" */ "../views/Login.vue");
+  import(/* webpackChunkName: "Login" */ "../views/Login.vue");
 
 const routes = [
+  {
+    path: '*',
+    redirect: '/not-found',
+  },
   {
     path: "/",
     name: "Home",
     component: Home,
+    meta: {
+      authRequired: true,
+      pageName: 'Home',
+      layout: 'Navbar',
+    },
   },
   {
     path: "/about",
@@ -25,21 +34,41 @@ const routes = [
     // which is lazy-loaded when the route is visited.
     component: () =>
       import(/* webpackChunkName: "about" */ "../views/About.vue"),
+    meta: {
+      authRequired: true,
+      pageName: 'About',
+      layout: 'Navbar',
+    },
   },
   {
     path: "/test",
     name: "Test",
     component: Test,
+    meta: {
+      authRequired: true,
+      pageName: 'Test',
+      layout: 'Basic',
+    },
   },
   {
     path: "/register",
     name: "Register",
     component: Register,
+    meta: {
+      authRequired: false,
+      pageName: 'Register',
+      layout: 'Basic',
+    },
   },
   {
     path: "/login",
     name: "Login",
     component: Login,
+    meta: {
+      authRequired: false,
+      pageName: 'Login',
+      layout: 'Basic',
+    },
   },
   { path: "*", redirect: "/" },
 ];
@@ -51,22 +80,35 @@ const router = new VueRouter({
   routes,
 });
 
-import USER from "/src/constants";
+// import store from "/src/store";
 router.beforeEach((to, from, next) => {
   // redirect to login when unauthorized
   const publicPages = ["/login", "/register"];
   const authRequired = !publicPages.includes(to.path);
-  const loggedIn = localStorage.getItem(USER);
-
-  // Don't let an authenticated user navigate to login.
-  // If they do, redirect to the dashboard
-  // if (authRequired && store.getters["Auth/authenticated"]) {
-  //   return next({ path: "/" });
-  // }
+  const loggedIn = sessionStorage.getItem("user") || localStorage.getItem("user");
 
   if (authRequired && !loggedIn) {
     return next("/login");
   }
+
+  // Don't let an authenticated user navigate to login.
+  // If they do, redirect to the dashboard
+  if (!authRequired && loggedIn) {
+    return next("/");
+  }
+
+  // // Is the user authenticated?
+  // if (to.meta.authRequired && !store.getters['auth/user']) {
+  //   // Authentication required for this route. Redirecting to login
+  //   return next({ path: '/login', query: { redirect: to.path } })
+  // }
+
+  // // Don't let an authenticated user navigate to login.
+  // // If they do, redirect to the dashboard
+  // if (to.path === '/login' && store.getters['auth/user']) {
+  //   // User is already logged in. Redirecting to dashboard
+  //   return next({ path: '/' })
+  // }
 
   next();
 });

@@ -1,66 +1,101 @@
 import router from "@/router";
+import { USER, ACCESS_TOKEN, REFRESH_TOKEN } from "/src/constants";
 import { authService } from "/src/services/auth.service.js";
-import { Message } from "element-ui";
+import { Notification } from "element-ui";
 
-if (
-  localStorage.getItem("user") === "undefined" ||
-  !localStorage.getItem("user")
-) {
-  authService.logout();
-}
+// if (localStorage.getItem(USER) === "undefined" || !localStorage.getItem(USER)) {
+//   // authService.logout();
+//   router.push("/login");
+// }
 
-const user = JSON.parse(localStorage.getItem("user"));
+const user = JSON.parse(localStorage.getItem(USER));
 const state = user
   ? { status: { loggedIn: true }, user }
   : { status: {}, user: null };
 
+const getters = {
+  user: (state) => state.user,
+};
+
 const actions = {
-  login({ dispatch, commit }, { email, password, remember }) {
+  login({ commit, dispatch }, { email, password, remember }) {
     commit("loginRequest", { email });
 
     authService
       .login(email, password, remember)
       .then((resp) => {
-        commit("loginSuccess", resp);
-        // dispatch("me");
+        if (resp?.data) {
+          const { user, token } = resp.data;
 
-        console.log(resp);
-        Message({
-          message: "Sign in successfully!",
-          type: "success",
-        });
+          if (remember) {
+            localStorage.setItem(USER, JSON.stringify(user));
+            localStorage.setItem(ACCESS_TOKEN, token.access_token);
+            localStorage.setItem(REFRESH_TOKEN, token.refresh_token);
+          } else {
+            sessionStorage.setItem(USER, JSON.stringify(user));
+            sessionStorage.setItem(ACCESS_TOKEN, token.access_token);
+            sessionStorage.setItem(REFRESH_TOKEN, token.refresh_token);
+          }
+
+          dispatch("me");
+          router.push("/");
+
+          commit("loginSuccess", resp);
+          Notification({
+            message: "Sign in successfully!",
+            type: "success",
+            position: 'bottom-right'
+          });
+        }
       })
       .catch((error) => {
-        commit("loginFailure", error);
-        dispatch("alert/error", error, { root: true });
-
-        // TODO: Handle error
-        console.log("error", error);
-        Message({
-          message: "Sign in failed!",
-          type: "error",
-        });
+        if (error) {
+          commit("loginFailure", error);
+          Notification({
+            message: "Sign in failed!",
+            type: "error",
+            position: 'bottom-right'
+          });
+        }
       });
   },
   logout({ commit }) {
-    authService.logout();
-    commit("logout");
+    authService.logout().finally(() => {
+      localStorage.removeItem(USER);
+      localStorage.removeItem(ACCESS_TOKEN);
+      localStorage.removeItem(REFRESH_TOKEN);
+
+      sessionStorage.removeItem(USER);
+      sessionStorage.removeItem(ACCESS_TOKEN);
+      sessionStorage.removeItem(REFRESH_TOKEN);
+
+      router.push("/login");
+
+      commit("logout");
+    });
   },
   register({ dispatch, commit }, user) {
     commit("registerRequest", user);
 
     authService.register(user).then(
       (user) => {
+        dispatch("me");
+        router.push("/");
+
         commit("registerSuccess", user);
-        // router.push("/login");
-        setTimeout(() => {
-          // show message successful and redirect page
-          dispatch("alert/success", "Registration successful!", { root: true });
+        Notification({
+          message: "Registration successful!",
+          type: "success",
+          position: 'bottom-right'
         });
       },
       (error) => {
         commit("registerFailure", error);
-        dispatch("alert/error", error, { root: true });
+        Notification({
+          message: "Registration failed!",
+          type: "error",
+          position: 'bottom-right'
+        });
       }
     );
   },
@@ -69,13 +104,9 @@ const actions = {
     authService.me().then(
       (resp) => {
         commit("meSuccess", resp);
-        router.push("/");
-        setTimeout(() => {
-          // show message successful and redirect page
-          dispatch("alert/success", "Registration successful!", { root: true });
-        }, 500);
       },
       (error) => {
+        // dispatch("logout");
         commit("meFailure", error);
         dispatch("alert/error", error, { root: true });
       }
@@ -90,7 +121,7 @@ const mutations = {
   },
   loginSuccess(state, { data, status }) {
     state.status = { loggedIn: true, status };
-    state.user = data?.user;
+    state.user = data.user;
   },
   loginFailure(state, status) {
     state.status = { ...status };
@@ -112,8 +143,9 @@ const mutations = {
   meRequest(state) {
     state.status = { requesting: true };
   },
-  meSuccess(state, status) {
+  meSuccess(state, { data, status }) {
     state.status = { requesting: false, ...status };
+    state.user = data.user;
   },
   meFailure(state, status) {
     state.status = { requesting: false, ...status };
@@ -123,6 +155,7 @@ const mutations = {
 export default {
   namespaced: true,
   state,
+  getters,
   actions,
   mutations,
 };
